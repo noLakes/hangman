@@ -11,7 +11,7 @@ module Hangman
   WORDS = File.readlines("/Users/Shan/web-projects/odin_on_rails/ruby_projects/hangman/5desk.txt")
 
   def randomWord
-    WORDS.sample.strip.split('')
+    WORDS.sample.strip
   end
 
 end
@@ -22,8 +22,6 @@ class Game
   
   def initialize
     @word = randomWord
-    @secret_word = []
-    (@word.length).times {@secret_word << '_'}
     @lives = 6
     @guesses = []
     start
@@ -39,12 +37,60 @@ class Game
   end
 
   def turn
-    puts "#{HANGMAN_TEXT[6 - @lives]}\n Lives: #{@lives}\n Wrong: #{incorrect}\n #{@secret_word.join(' ')}"
+    game_over if @lives == 0
+    puts "#{HANGMAN_TEXT[6 - @lives]}\n Lives: #{@lives}\n Wrong: #{incorrect}\n #{show_word}"
+    get_guess
+    check_win
+    turn
     
   end
 
+  def show_word
+    show = @word.split('').map do |char|
+      if @guesses.include?(char.downcase) || @guesses.include?(char.upcase)
+        char
+      else
+        '_'
+      end
+    end
+    show.join(' ')
+  end
+
+  def check_win
+    test = @guesses.select {|char| @word.include?(char.downcase) || @word.include?(char.upcase)}
+    win if @word.split('').uniq.length == test.length
+  end
+
+  def win
+    puts "You won! You guessed the word #{@word.upcase} with #{@lives} lives left"
+    exit
+  end
+
+  def game_over
+    puts "#{HANGMAN_TEXT[6]}\n You died!\n The word was: #{@word.upcase}"
+    exit
+  end
+
+  def get_guess
+    puts "\nGuess a letter:"
+    guess = gets.chomp
+    if guess.length.zero?
+      puts "Error: No input!"
+      get_guess
+    elsif !guess[0].downcase.ord.between?(97, 122)
+      puts "Error: Guess not a letter!"
+      get_guess
+    elsif @guesses.include?(guess[0].downcase) || @guesses.include?(guess[0].upcase)
+      puts "You've already guessed (#{guess})"
+      get_guess
+    else
+      @guesses << guess[0].downcase
+      @lives -= 1 if !@word.include?(guess[0].downcase) && !@word.include?(guess[0].upcase)
+    end
+  end
+
   def incorrect
-    "(#{@guesses.join(' ')})"
+    "(#{@guesses.select {|char| !@word.include?(char.downcase) && !@word.include?(char.upcase)}.join(' ')})"
   end
 
 end
