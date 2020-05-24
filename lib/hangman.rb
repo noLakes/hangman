@@ -1,3 +1,5 @@
+require 'yaml'
+
 module Hangman
   HANGMAN_TEXT = {
     0 => "     +---+\n     |   |\n         |\n         |\n         |\n         |\n ===========",
@@ -28,6 +30,7 @@ class Game
   end
 
   private
+  attr_reader :word
 
   def start 
     puts " ===========\n   HANGMAN\n ==========="
@@ -36,13 +39,31 @@ class Game
     turn
   end
 
+  def save(save_name)
+    data = YAML.dump ({
+      :word => @word,
+      :lives => @lives,
+      :guesses => @guesses,
+    })
+    save =  File.open(save_name, 'w')
+    save.puts(data)
+    puts "Game saved as #{save_name}.yaml"
+  end
+
+  def load(save_name)
+    data = YAML.load(File.read(save_name))
+    @word = data[:word]
+    @lives = data[:lives]
+    @guesses = date[:guesses]
+    start
+  end
+
   def turn
     game_over if @lives == 0
     puts "#{HANGMAN_TEXT[6 - @lives]}\n Lives: #{@lives}\n Wrong: #{incorrect}\n #{show_word}"
     get_guess
     check_win
     turn
-    
   end
 
   def show_word
