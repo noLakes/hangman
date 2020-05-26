@@ -34,9 +34,14 @@ class Game
 
   def start 
     puts " ===========\n   HANGMAN\n ==========="
+    puts "\n You may save the game by entering 'save' at any time you would enter a guess."
     puts "\n Would you like to load a previous save? [y/n]"
-    #gets answer
-    turn
+    if gets.chomp == 'y'
+      puts " Please enter the filename you wish to load from:"
+      load(gets.chomp)
+    else
+      turn
+    end
   end
 
   def save(save_name)
@@ -54,8 +59,8 @@ class Game
     data = YAML.load(File.read(save_name))
     @word = data[:word]
     @lives = data[:lives]
-    @guesses = date[:guesses]
-    start
+    @guesses = data[:guesses]
+    turn
   end
 
   def turn
@@ -84,12 +89,12 @@ class Game
 
   def win
     puts "You won! You guessed the word #{@word.upcase} with #{@lives} lives left"
-    exit
+    new_game
   end
 
   def game_over
     puts "#{HANGMAN_TEXT[6]}\n You died!\n The word was: #{@word.upcase}"
-    exit
+    new_game
   end
 
   def get_guess
@@ -98,6 +103,9 @@ class Game
     if guess.length.zero?
       puts "Error: No input!"
       get_guess
+    elsif guess.downcase == 'save'
+      puts "Please enter save name:"
+      save(gets.chomp)
     elsif !guess[0].downcase.ord.between?(97, 122)
       puts "Error: Guess not a letter!"
       get_guess
@@ -114,6 +122,11 @@ class Game
     "(#{@guesses.select {|char| !@word.include?(char.downcase) && !@word.include?(char.upcase)}.join(' ')})"
   end
 
+  def new_game
+    sleep 0.5
+    puts "\n Would you like to play again? [y/n]"
+    gets.chomp == 'y' ? initialize : exit
+  end
 end
 
 Game.new
